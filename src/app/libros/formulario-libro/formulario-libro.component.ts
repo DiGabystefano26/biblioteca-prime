@@ -1,8 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { Message } from 'primeng/api';
 import { Libro } from 'src/app/interfaces/libro.interface';
 import { LibrosService } from 'src/app/servicios/libros.service';
-
 
 @Component({
   selector: 'app-formulario-libro',
@@ -24,6 +23,9 @@ export class FormularioLibroComponent implements OnInit {
   guardando: boolean = false;
   mensaje: Message[] = [];
 
+  @Output()
+  recargarLibros: EventEmitter<boolean> = new EventEmitter();
+
   constructor(
     private servicioLibros: LibrosService
   ) { }
@@ -43,11 +45,12 @@ export class FormularioLibroComponent implements OnInit {
       this.servicioLibros.post(libro).subscribe({
         next: () => {
           this.guardando = false;
-       
+
         },
         error: (e) => {
           this.guardando = false;
-          this.mensaje=[{severity: 'error', summary: 'Error al registrar', detail: e.error}];
+          this.mensaje = [{ severity: 'error', summary: 'Error al registrar', detail: e.error }];
+          this.recargarLibros.emit(true);
         }
       });
     }
@@ -59,6 +62,21 @@ export class FormularioLibroComponent implements OnInit {
     this.autorValido = this.autor !== null && this.autor?.length > 0;
     this.paginasValido = this.paginas !== null;
     return this.codigoValido && this.tituloValido && this.autorValido && this.paginasValido;
+  }
+
+
+  limpiarFormulario() {
+    this.codigo = null;
+    this.titulo = null;
+    this.autor = null;
+    this.paginas = null;
+
+    this.codigoValido = true;
+    this.tituloValido = true;
+    this.autorValido = true;
+    this.paginasValido = true;
+
+    this.mensaje = [];
   }
 
 }
