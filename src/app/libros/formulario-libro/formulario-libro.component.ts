@@ -23,6 +23,8 @@ export class FormularioLibroComponent implements OnInit {
   guardando: boolean = false;
   mensaje: Message[] = [];
 
+  modo: 'Registrar' | 'Editar' = 'Registrar';
+
   @Output()
   recargarLibros: EventEmitter<boolean> = new EventEmitter();
 
@@ -41,19 +43,49 @@ export class FormularioLibroComponent implements OnInit {
         autor: this.autor,
         paginas: this.paginas
       }
-      this.guardando = true;
-      this.servicioLibros.post(libro).subscribe({
-        next: () => {
-          this.guardando = false;
-
-        },
-        error: (e) => {
-          this.guardando = false;
-          this.mensaje = [{ severity: 'error', summary: 'Error al registrar', detail: e.error }];
-          this.recargarLibros.emit(true);
-        }
-      });
+     if(this.modo === 'Registrar'){
+      this.registrar(libro);
+     }else{
+      this.editar(libro);
+     }
     }
+  }
+
+
+
+  private registrar(libro: Libro){
+    this.guardando = true;
+    this.servicioLibros.post(libro).subscribe({
+      next: () => {
+        this.mensaje = [{ severity: 'success', summary: 'Éxito', detail: 'Se registró el libro'}];
+        this.recargarLibros.emit(true);
+        this.guardando = false;
+
+      },
+      error: (e) => {
+        this.guardando = false;
+        this.mensaje = [{ severity: 'error', summary: 'Error al registrar', detail: e.error }];
+      }
+    });
+
+  }
+
+  private editar(libro: Libro){
+    this.guardando = true;
+    this.servicioLibros.put(libro).subscribe({
+      next: () => {
+        this.guardando = false;
+        this.mensaje = [{ severity: 'success', summary: 'Éxito', detail: 'Se editó el libro'}];
+        this.recargarLibros.emit(true);
+      },
+      error: (e) => {
+        this.guardando = false;
+        console.log(e);
+        this.mensaje = [{severity: 'error', summary: 'Error al editar', detail: e.error}];
+      }
+    });
+
+    
   }
 
   validar(): boolean {
